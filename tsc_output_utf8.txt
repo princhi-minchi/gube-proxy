@@ -1,0 +1,8 @@
+﻿src/index.ts(69,122): error TS2554: Expected 1 arguments, but got 2.
+src/index.ts(75,33): error TS2339: Property 'json' does not exist on type 'void'.
+src/index.ts(91,19): error TS2339: Property 'ok' does not exist on type 'void'.
+src/index.ts(91,50): error TS2339: Property 'status' does not exist on type 'void'.
+src/index.ts(93,33): error TS2339: Property 'json' does not exist on type 'void'.
+src/index.ts(109,19): error TS2339: Property 'ok' does not exist on type 'void'.
+src/index.ts(109,50): error TS2339: Property 'status' does not exist on type 'void'.
+src/index.ts(111,33): error TS2339: Property 'json' does not exist on type 'void'.
