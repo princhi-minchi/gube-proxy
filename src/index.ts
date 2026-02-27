@@ -6,6 +6,7 @@ type Bindings = {
     DB: D1Database
     GOOGLE_API_KEY: string
     ULTRALINGUA_API_KEY: string
+    DEEPL_API_KEY: string
     ADMIN_TOKEN: string
 }
 
@@ -70,6 +71,42 @@ app.post('/api/translate', async (c) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    return c.json(data);
+})
+
+// DeepL Translate Proxy
+app.post('/api/deepl', async (c) => {
+    const body = await c.req.json();
+
+    // Extract target text, source language, target language, and optional context
+    const text = body.text || body.targetText || body.target_text;
+    const targetLang = body.target_lang || body.targetLang;
+    const sourceLang = body.source_lang || body.sourceLang;
+    const context = body.context;
+
+    const deeplPayload: Record<string, any> = {
+        text: Array.isArray(text) ? text : [text],
+        target_lang: targetLang
+    };
+
+    if (sourceLang) {
+        deeplPayload.source_lang = sourceLang;
+    }
+
+    if (context) {
+        deeplPayload.context = context;
+    }
+
+    const response = await fetch('https://api-free.deepl.com/v2/translate', {
+        method: 'POST',
+        headers: {
+            'Authorization': `DeepL-Auth-Key ${c.env.DEEPL_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(deeplPayload)
     });
 
     const data = await response.json();
