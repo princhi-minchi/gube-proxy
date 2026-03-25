@@ -10,31 +10,15 @@
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "MY_KV_NAMESPACE",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
-  //   }
-  // ],
-  // "ai": {
-  //   "binding": "AI"
-  // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
-  // },
 
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "gube",
-      "database_id": "e9b66e71-c7cf-4ab4-bbcc-2a87cf543c1a"
+   "kv_namespaces": [
+     {
+       "binding": "VERB_DB",
+       "id": "bcdea3493dbc43d0ba9079fdd590ab5d"
+     },
+     {
+       "binding": "REVERSE_DB_V2",
+       "id": "38a94b654e334c8b8a3e25a41ceee536"
     }
-  ]
+   ]
 }
