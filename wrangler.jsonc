@@ -11,14 +11,19 @@
   //   "MY_VAR": "my-variable"
   // },
 
-   "kv_namespaces": [
-     {
-       "binding": "VERB_DB",
-       "id": "bcdea3493dbc43d0ba9079fdd590ab5d"
-     },
-     {
-       "binding": "REVERSE_DB_V2",
-       "id": "38a94b654e334c8b8a3e25a41ceee536"
+  "kv_namespaces": [
+    {
+      "binding": "VERB_DB",
+      "id": "bcdea3493dbc43d0ba9079fdd590ab5d"
+    },
+    {
+      "binding": "REVERSE_DB_V2",
+      "id": "38a94b654e334c8b8a3e25a41ceee536"
+    },
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "b793905c14fc4c479cc084aebe8e3c00",
+      "preview_id": "ba9ac6771a0145f3bd3973a2d790304e"
     }
-   ]
+  ]
 }

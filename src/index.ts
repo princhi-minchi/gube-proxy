@@ -8,6 +8,7 @@ type Bindings = {
     DEEPL_API_KEY: string
     ADMIN_TOKEN: string
     ALLOWED_EXTENSION_ID?: string
+    RATE_LIMIT_KV: KVNamespace
     [key: string]: KVNamespace | string | undefined // For dynamic DB access
 }
 
@@ -194,6 +195,39 @@ app.use('/*', async (c, next) => {
     
     return corsMiddleware(c, next)
 })
+
+async function checkRateLimit(
+    kv: KVNamespace,
+    userId: string,
+    type: 'conjugation' | 'deepl'
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+    const limit = type === 'conjugation' ? 75 : 100;
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `rl:${type}:${userId}:${today}`;
+
+    // Get current count
+    const raw = await kv.get(key);
+    const current = raw ? parseInt(raw, 10) : 0;
+
+    // Compute seconds until UTC midnight for TTL
+    const now = Date.now();
+    const midnight = new Date();
+    midnight.setUTCHours(24, 0, 0, 0);
+    const ttl = Math.ceil((midnight.getTime() - now) / 1000);
+
+    if (current >= limit) {
+        return { allowed: false, remaining: 0, resetAt: midnight.getTime() };
+    }
+
+    // Increment and refresh TTL
+    await kv.put(key, String(current + 1), { expirationTtl: ttl });
+
+    return {
+        allowed: true,
+        remaining: limit - (current + 1),
+        resetAt: midnight.getTime()
+    };
+}
 
 function normalizeApostrophes(value: string) {
     return value.replace(/[\u2018\u2019\u0060\u00B4]/g, "'")
@@ -651,6 +685,20 @@ app.post('/api/translate', async (c) => {
 
 // 3. DeepL Translate Proxy
 app.post('/api/deepl', async (c) => {
+    const userId = c.req.header('x-user-id')?.trim() || 'anonymous';
+    const rateCheck = await checkRateLimit(c.env.RATE_LIMIT_KV, userId, 'deepl');
+    if (!rateCheck.allowed) {
+        return c.json(
+            { error: `Rate limit exceeded. You have used all 100 free DeepL translations for today. Resets at UTC midnight.` },
+            429,
+            {
+                'X-RateLimit-Limit': '100',
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': String(Math.ceil(rateCheck.resetAt / 1000))
+            }
+        );
+    }
+
     const body = await c.req.json();
 
     const text = body.text || body.targetText || body.target_text;
@@ -685,6 +733,20 @@ app.post('/api/deepl', async (c) => {
 
 // 4. Dynamic Conjugation Lookup Route
 app.post('/api/:language/conjugation-lookup', async (c) => {
+    const userId = c.req.header('x-user-id')?.trim() || 'anonymous';
+    const rateCheck = await checkRateLimit(c.env.RATE_LIMIT_KV, userId, 'conjugation');
+    if (!rateCheck.allowed) {
+        return c.json(
+            { error: `Rate limit exceeded. You have used all 75 free conjugation lookups for today. Resets at UTC midnight.` },
+            429,
+            {
+                'X-RateLimit-Limit': '75',
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': String(Math.ceil(rateCheck.resetAt / 1000))
+            }
+        );
+    }
+
     const lang = c.req.param('language')
     const body = await c.req.json<{ selection?: unknown, selectionContext?: unknown }>()
     const selection = typeof body.selection === 'string' ? body.selection : ''
